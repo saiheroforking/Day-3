@@ -1,0 +1,119 @@
+    :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #9aa4b2;
+        --accent: #06b6d4
+    }
+
+    body {
+        font-family: Inter, Segoe UI, Roboto, Arial;
+        background: linear-gradient(180deg, #061022, #071025);
+        color: #cbd5e1;
+        margin: 0;
+        padding: 28px
+    }
+
+    .container {
+        max-width: 980px;
+        margin: 0 auto
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 20px
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 16px;
+        border-radius: 10px
+    }
+
+    .controls {
+        display: flex;
+        gap: 8px
+    }
+
+    button {
+        background: var(--accent);
+        border: none;
+        color: #022;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer
+    }
+
+    button.ghost {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid rgba(255, 255, 255, 0.04)
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.03)
+    }
+
+    .small-form {
+        display: none;
+        margin-top: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px
+    }
+
+    .small-form.show {
+        display: block
+    }
+
+    label {
+        display: block;
+        margin: 6px 0 4px;
+        font-size: 13px;
+        color: var(--muted)
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        background: transparent;
+        color: inherit
+    }
+
+    .row {
+        display: flex;
+        gap: 8px
+    }
+
+    .row>* {
+        flex: 1
+    }
+
+    .actions button {
+        margin-right: 6px
+    }
+
+    .notice {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px;
+        border-radius: 8px;
+        margin-top: 12px;
+        color: var(--muted)
+    }

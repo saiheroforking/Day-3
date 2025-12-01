@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>User Dashboard</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/Styles/main.css" />
+    <script src="./Scripts/app.js" defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>User Dashboard — API Integration</h1>
+            <div class="controls">
+                <button id="refreshBtn">Fetch Users</button>
+                <button id="toggleAddBtn" class="ghost">Add User</button>
+                <button id="useMockBtn" class="ghost">Use Mock Data</button>
+            </div>
+        </header>
+
+        <section class="card">
+            <div id="formContainer" class="small-form" aria-hidden="true">
+                <form id="userForm">
+                    <input type="hidden" id="userId" />
+                    <div class="row">
+                        <div>
+                            <label for="name">Name</label>
+                            <input id="name" required placeholder="Full name (Alice Doe)" />
+                        </div>
+                        <div>
+                            <label for="username">Username</label>
+                            <input id="username" required placeholder="username" />
+                        </div>
+                    </div>
+                    <label for="email">Email</label>
+                    <input id="email" required placeholder="email@example.com" />
+                    <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+                        <button type="submit">Save</button>
+                        <button type="button" id="cancelBtn" class="ghost">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="listContainer">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div id="notice" class="notice" style="display:none"></div>
+        </section>
+    </div>
+
+
+</html>
