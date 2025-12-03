@@ -18,6 +18,18 @@ project-root/
 > Note: `index.html` references `./Styles/main.css` and `./Scripts/app.js`. Keep these paths when serving locally.
 
 ---
+## 🚀 Live Demo
+🔗 *GitHub Pages Link:*  
+https://saiheroforking.github.io/Day-3/
+
+---
+
+## 📸 Project Preview
+
+![Project Screenshot](./Screenshot%2025-12-01%235538.png)
+
+
+---
 
 ## Features
 
