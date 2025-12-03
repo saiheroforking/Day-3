@@ -26,7 +26,7 @@ https://saiheroforking.github.io/Day-3/
 
 ## 📸 Project Preview
 
-![Project Screenshot](./Screenshot%2025-12-01%235538.png)
+![Project Screenshot](./asserts/Screenshot.png)
 
 
 ---
