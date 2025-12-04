@@ -1,106 +1,215 @@
-const API_URL = "https://jsonplaceholder.typicode.com/users";
+function myForEach(arr, fn) {
+  if (!Array.isArray(arr)) return;
+  for (let i = 0; i < arr.length; i++)
+    fn(arr[i], i, arr);
+}
 
-const MOCK_USERS = [
-  { id: 1, name: "Sai", username: "sai01", email: "sai@gmail.com" },
-  { id: 2, name: "Ravi", username: "ravi02", email: "ravi@gmail.com" }
-];
+function myFilter(arr, pred) {
+  if (!Array.isArray(arr)) return [];
+  const out = [];
+  myForEach(arr, v => pred(v) && out.push(v));
+  return out;
+}
+
+function niceName(raw) {
+  if (!raw) return '';
+  return String(raw).trim().toLowerCase()
+    .split(/\s+/)
+    .map(p => p[0].toUpperCase() + p.slice(1))
+    .join(' ');
+}
+
+const API_ROOT = 'https://jsonplaceholder.typicode.com/users';
 
 let users = [];
 let usingMock = false;
 
-// ✅ Custom forEach
-function myForEach(arr, fn){
-  for(let i = 0; i < arr.length; i++){
-    fn(arr[i], i, arr);
+const MOCK_USERS = [
+  { id: 1, name: 'Leanne Graham', username: 'Bret', email: 'Sincere@april.biz' },
+  { id: 2, name: 'Ervin Howell', username: 'Antonette', email: 'Shanna@melissa.tv' },
+  { id: 3, name: 'Clementine Bauch', username: 'Samantha', email: 'Nathan@yesenia.net' },
+  { id: 4, name: 'Patricia Lebsack', username: 'Karianne', email: 'Julianne.OConner@kory.org' }
+];
+
+const usersTableBody = document.querySelector('#usersTable tbody');
+const refreshBtn = document.getElementById('refreshBtn');
+const toggleAddBtn = document.getElementById('toggleAddBtn');
+const useMockBtn = document.getElementById('useMockBtn');
+const formContainer = document.getElementById('formContainer');
+const userForm = document.getElementById('userForm');
+const cancelBtn = document.getElementById('cancelBtn');
+
+const userIdInput = document.getElementById('userId');
+const nameInput = document.getElementById('name');
+const usernameInput = document.getElementById('username');
+const emailInput = document.getElementById('email');
+const noticeEl = document.getElementById('notice');
+
+function showNotice(msg, isError) {
+  if (!noticeEl) return;
+  noticeEl.style.display = 'block';
+  noticeEl.textContent = msg;
+  noticeEl.style.color = isError ? 'red' : 'gray';
+}
+function hideNotice() {
+  if (noticeEl) {
+    noticeEl.style.display = 'none';
+    noticeEl.textContent = '';
   }
 }
+function fetchWithTimeout(url, options = {}, timeout = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
 
-// ✅ Custom filter
-function myFilter(arr, predicate){
-  const result = [];
-  myForEach(arr, item => {
-    if(predicate(item)) result.push(item);
-  });
-  return result;
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
 }
-
-// ✅ Name formatting
-function niceName(name){
-  return name.trim().toLowerCase()
-             .split(" ")
-             .map(w => w[0].toUpperCase() + w.slice(1))
-             .join(" ");
-}
-
-// ✅ Fetch with timeout
-function fetchWithTimeout(url, timeout = 5000){
-  return Promise.race([
-    fetch(url),
-    new Promise((_, reject) =>
-      setTimeout(() => reject("Timeout Error"), timeout)
-    )
-  ]);
-}
-
-// ✅ Get users
-function getUsers(){
-  return fetchWithTimeout(API_URL)
-    .then(res => res.json())
-    .catch(() => {
-      usingMock = true;
-      return MOCK_USERS;
-    });
-}
-
-// ✅ Render users
-function renderUsers(list){
-  const tbody = document.querySelector("tbody");
-  tbody.innerHTML = "";
+function renderUsers(list) {
+  if (!usersTableBody) return;
+  usersTableBody.innerHTML = '';
 
   myForEach(list, user => {
-    tbody.innerHTML += `
+    usersTableBody.innerHTML += `
       <tr>
         <td>${user.id}</td>
         <td>${niceName(user.name)}</td>
         <td>${user.username}</td>
-        <td>${user.email}</td>
-      </tr>`;
+        <td>${(user.email || '').toLowerCase()}</td>
+        <td>
+          <button data-action="edit" data-id="${user.id}">Edit</button>
+          <button data-action="delete" data-id="${user.id}">Delete</button>
+        </td>
+      </tr>
+    `;
   });
 }
+function filterActive(list) {
+  return Promise.resolve(myFilter(list, u => Number(u.id) % 2 === 1));
+}
+function getUsersFromNetwork() {
+  return fetchWithTimeout(API_ROOT)
+    .then(res => {
+      if (!res.ok) throw new Error('Network error');
+      return res.json();
+    });
+}
 
-// ✅ Fetch → Filter → Render
-function fetchUsers(){
-  getUsers()
-    .then(data => {
-      users = data;
-      return myFilter(users, user => user.id % 2 === 1);
+function fetchUsers() {
+  hideNotice();
+  usingMock = false;
+
+  return getUsersFromNetwork()
+    .then(data => users = data.slice(0, 10))
+    .catch(err => {
+      console.error(err);
+      usingMock = true;
+      showNotice('Using mock data (API failed)', true);
+      users = MOCK_USERS.slice();
+      return users;
     })
-    .then(active => renderUsers(active))
-    .catch(err => console.log(err));
+    .then(filterActive)
+    .then(renderUsers);
+}
+function postUserToNetwork(payload) {
+  return fetchWithTimeout(API_ROOT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
 }
 
-// ✅ Add User
-function addUser(user){
-  user.id = users.length + 1;
-  users.push(user);
-  renderUsers(users);
-  return Promise.resolve(user);
-}
+function addUser(newUser) {
+  if (usingMock) {
+    const id = users.length + 1;
+    const created = { ...newUser, id };
+    users.push(created);
+    renderUsers(myFilter(users, u => u.id % 2 === 1));
+    return Promise.resolve(created);
+  }
 
-// ✅ Update User
-function updateUser(id, data){
-  const index = users.findIndex(u => u.id === id);
-  users[index] = {...users[index], ...data};
-  renderUsers(users);
-  return Promise.resolve(users[index]);
+  return postUserToNetwork(newUser)
+    .then(created => {
+      users.push({ ...newUser, id: created.id });
+      renderUsers(myFilter(users, u => u.id % 2 === 1));
+      return created;
+    })
+    .catch(() => {
+      usingMock = true;
+      return addUser(newUser);
+    });
 }
+function updateUser(id, payload) {
+  id = Number(id);
 
-// ✅ Delete User
-function deleteUser(id){
-  users = users.filter(u => u.id !== id);
-  renderUsers(users);
+  const idx = users.findIndex(u => Number(u.id) === id);
+  if (idx === -1) return Promise.resolve(null);
+
+  users[idx] = { ...users[idx], ...payload };
+  renderUsers(myFilter(users, u => u.id % 2 === 1));
+
+  return Promise.resolve(users[idx]);
+}
+function deleteUser(id) {
+  id = Number(id);
+  users = users.filter(u => Number(u.id) !== id);
+  renderUsers(myFilter(users, u => u.id % 2 === 1));
   return Promise.resolve();
 }
+refreshBtn?.addEventListener('click', fetchUsers);
 
-// ✅ Start app
+toggleAddBtn?.addEventListener('click', () => {
+  formContainer?.classList.toggle('show');
+  userForm?.reset();
+});
+
+useMockBtn?.addEventListener('click', () => {
+  usingMock = true;
+  users = MOCK_USERS.slice();
+  renderUsers(myFilter(users, u => u.id % 2 === 1));
+  showNotice('Mock data enabled', false);
+});
+
+cancelBtn?.addEventListener('click', () => {
+  formContainer?.classList.remove('show');
+});
+
+usersTableBody?.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  const id = Number(btn.dataset.id);
+
+  if (btn.dataset.action === 'edit') {
+    const u = users.find(x => x.id === id);
+    if (!u) return;
+
+    formContainer.classList.add('show');
+    userIdInput.value = u.id;
+    nameInput.value = u.name;
+    usernameInput.value = u.username;
+    emailInput.value = u.email;
+  }
+
+  if (btn.dataset.action === 'delete') {
+    if (confirm('Delete user?')) deleteUser(id);
+  }
+});
+userForm?.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const id = userIdInput.value ? Number(userIdInput.value) : null;
+
+  const userData = {
+    name: niceName(nameInput.value),
+    username: usernameInput.value.trim(),
+    email: emailInput.value.trim().toLowerCase()
+  };
+
+  const action = id ? updateUser(id, userData) : addUser(userData);
+
+  action.then(() => formContainer.classList.remove('show'));
+});
+
 fetchUsers();
+
+window._demo = { fetchUsers, addUser, updateUser, deleteUser };
